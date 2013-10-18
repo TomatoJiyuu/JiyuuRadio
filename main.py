@@ -26,8 +26,8 @@ s.send("JOIN "+ HOME_CHANNEL +"\r\n")
 
 def parse_command(command):
     if command.startswith("add"):
-        args = command[3:]
-        mpc.searchadd("any", args)
+        args = command[4:]
+        mpc.searchadd("all", args)
     elif command == "last":
         # should detect last song id and play that, but this'll do for the time being
         mpc.play()
