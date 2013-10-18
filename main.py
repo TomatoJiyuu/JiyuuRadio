@@ -28,8 +28,7 @@ def parse_command(command):
     if command.startswith("add"):
         args = command[4:]
         mpc.searchadd("any", args)
-    elif command == "last":
-        # should detect last song id and play that, but this'll do for the time being
+    elif command == "play":
         mpc.play()
     elif command == "next":
         mpc.next()
@@ -40,9 +39,10 @@ def parse_command(command):
         for track in mpc.playlist()[:4]:
             queue += str(track)+"\n"
         return_output(queue)
+    elif command == "stats":
+        return_output(mpc.stats())
     elif command == "help":
-        #print help
-        pass
+        return_output(".add - adds tracks | .play - starts playing (useful for when the stream dies due to lack of queued tracks)\n.next - next track | .current - prints infor about current track\n.queue - shows next 4 songs | .stats - shows stats")
 
 def return_output(text):
     text=str(text)
@@ -62,14 +62,17 @@ while 1:
 	print line
 
 while 1:
-    line = s.recv(2048)
-    line = line.strip("\r\n")
-    print line
-    if "PING" in line:
-        s.send("PONG :"+line[6:])
-    elif "PRIVMSG" in line and not "NOTICE" in line and HOME_CHANNEL in line:
-        command = line[line.rindex(":")+1:]
-        if "*" in command:
-            return_output("NOPE")
-        elif command.startswith("."):
-            parse_command(command[1:])
+    try:
+        line = s.recv(2048)
+        line = line.strip("\r\n")
+        print line
+        if "PING" in line:
+            s.send("PONG :"+line[6:])
+        elif "PRIVMSG" in line and not "NOTICE" in line and HOME_CHANNEL in line:
+            command = line[line.rindex(":")+1:]
+            if "*" in command:
+                return_output("NOPE")
+            elif command.startswith("."):
+                parse_command(command[1:])
+    except:
+        return_output("I dun goofed, soz aye m80.")
