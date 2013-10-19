@@ -54,7 +54,7 @@ def parse_command(command, what):
                 mpc.update()
                 time.sleep(5)
                 mpc.searchadd("file", fname)
-                return_output(args+" fetched and queued")
+                return_output(fname+" fetched and queued")
             else:
                 return_output("Mime type "+dl.info().type+" not allowed.")
         except Exception, e:
