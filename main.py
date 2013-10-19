@@ -41,10 +41,35 @@ def parse_command(command):
         return_output(queue)
     elif command == "stats":
         return_output(mpc.stats())
-    elif command == "help":
-        return_output(".add - adds tracks | .play - starts playing (useful for when the stream dies due to lack of queued tracks)\n.next - next track | .current - prints infor about current track\n.queue - shows next 4 songs | .stats - shows stats")
+    elif command == "clear":
+        mpc.clear()
+    elif command.startswith("help"):
+        return_output("Available commands: .add .play .next .current .queue .stats .clear")
+
+        try:
+            args = command[5:]
+            if args.startswith("."):
+                args = args[1:]
+
+            if args == "add":
+                return_output(".add - adds tracks")
+            elif args == "play":
+                return_output(".play - starts playing (useful for when the stream dies due to lack of queued tracks")
+            elif args == "next":
+                return_output(".next - next track")
+            elif args == "current":
+                return_output(".current - prints infor about current track")
+            elif args == "queue":
+                return_output(".queue - shows next 4 songs")
+            elif args == "stats":
+                return_output(".stats - shows stats")
+            elif args == "clear":
+                return_output(".clear - clears curent queue")
+        except:
+            pass
 
 def return_output(text):
+    #can only send 5 lines at a time on Rizon before being kicked for flood
     text=str(text)
     for msg in text.split("\n"):
         s.send("PRIVMSG "+HOME_CHANNEL+" :"+str(msg)+"\r\n")
@@ -74,5 +99,6 @@ while 1:
                 return_output("NOPE")
             elif command.startswith("."):
                 parse_command(command[1:])
-    except:
+    except Exception, e:
+        return_output(e)
         return_output("I dun goofed, soz aye m80.")
