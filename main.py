@@ -32,7 +32,7 @@ if not os.path.exists(os.path.join(MUSIC_PATH, NICK+"_downloaded_music")):
     os.mkdir(os.path.join(MUSIC_PATH, NICK+"_downloaded_music"))
 
 
-def parse_command(command):
+def parse_command(command, what):
     if command.startswith("download") or command.startswith("dl"):
         args = command[command.index(" ")+1:]
         return_output("Fetching track "+args)
@@ -69,7 +69,7 @@ def parse_command(command):
                 args = args[1:]
 
             if args == "add":
-                return_output(".add - adds tracks")
+                return_output(".add [search term] - adds tracks")
             elif args == "play":
                 return_output(".play - starts playing (useful for when the stream dies due to lack of queued tracks")
             elif args == "next":
@@ -82,8 +82,8 @@ def parse_command(command):
                 return_output(".stats - shows stats")
             elif args == "clear":
                 return_output(".clear - clears curent queue")
-            elif args == "download" or "dl":
-                return_output(".download | .dl - downloads track from URL and updates db")
+            elif args == "download" or args == "dl":
+                return_output("<.download | .dl> [url] - downloads track from URL and updates db")
         except:
             pass
 
@@ -117,8 +117,7 @@ while 1:
             if "*" in command:
                 return_output("NOPE")
             elif command.startswith("."):
-                print command
-                thread.start_new_thread(parse_command, command[1:])
+                thread.start_new_thread(parse_command, (command[1:], ""))
     except Exception, e:
         return_output(e)
         return_output("I dun goofed, soz aye m80.")
