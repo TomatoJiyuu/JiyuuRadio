@@ -3,7 +3,7 @@ import mpd
 import ssl
 import os
 import urllib2
-import thread
+import threading
 import time
 
 MPD_HOST = "127.0.0.1"
@@ -16,6 +16,8 @@ PORT = 9999
 SSL = True
 
 MUSIC_PATH = "/media/music/Music"
+
+HELP_DICT = {"add": ".add [search term] - queues tracks for playback", "play": ".play - starts playing (useful for when the stream dies due to lack of queued tracks", "next": ".next - next track", "current": ".current - prints infor about current track", "queue": ".queue - shows next 4 songs", "stats": ".stats - shows stats", "download": "<.download | .dl> [url] - downloads track from URL and queues it", "dl": "<.download | .dl> [url] - downloads track from URL and queues it"}
 
 
 mpc = mpd.MPDClient()
@@ -35,12 +37,6 @@ if not os.path.exists(os.path.join(MUSIC_PATH, NICK+"_downloaded_music")):
 
 
 
-def parse_command(command, what):
-    try:
-        mapped = command[:command.index(" ")]
-    except ValueError:
-        mapped = command
-    COMMAND_MAPPING[mapped](command)
 
 def cmd_play(command):
     mpc.play()
@@ -93,26 +89,11 @@ def cmd_stats(command):
 
 def cmd_help(command):
     return_output("Available commands: .add .play .next .current .queue .stats .download")
-
     try:
         args = command[5:]
         if args.startswith("."):
             args = args[1:]
-
-        if args == "add":
-            return_output(".add [search term] - queues tracks for playback")
-        elif args == "play":
-            return_output(".play - starts playing (useful for when the stream dies due to lack of queued tracks")
-        elif args == "next":
-            return_output(".next - next track")
-        elif args == "current":
-            return_output(".current - prints infor about current track")
-        elif args == "queue":
-            return_output(".queue - shows next 4 songs")
-        elif args == "stats":
-            return_output(".stats - shows stats")
-        elif args == "download" or args == "dl":
-            return_output("<.download | .dl> [url] - downloads track from URL and queues it")
+        return_output(HELP_DICT[args])
     except:
         pass
 
@@ -123,6 +104,15 @@ def return_output(text):
     text=str(text)
     for msg in text.split("\n"):
         s.send("PRIVMSG " + HOME_CHANNEL + " :" + str(msg) + "\r\n")
+
+
+def parse_command(command):
+    try:
+        mapped = command[:command.index(" ")]
+    except ValueError:
+        mapped = command
+    COMMAND_MAPPING[mapped](command)
+
 
 
 COMMAND_MAPPING = {"dl": cmd_download, "download": cmd_download, "add": cmd_add, "play": cmd_play, "next": cmd_next, "current": cmd_current, "queue": cmd_queue, "stats": cmd_stats, "help": cmd_help}
@@ -148,4 +138,6 @@ while 1:
         if "*" in command:
             return_output("NOPE")
         elif command.startswith("."):
-            thread.start_new_thread(parse_command, (command[1 : ], ""))
+            t = threading.Thread(target = parse_command, args=(command[1 : ],))
+            t.daemon = 1
+            t.start()
