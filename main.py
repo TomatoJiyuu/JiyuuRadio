@@ -63,11 +63,12 @@ def reconnect_mpd():
 def auto_wait():
     while 1:
         time.sleep(30)
-        if len(mpc.playlist()) < 5:
-            try:
+        try:
+            if len(mpc.playlist()) < 5:
                 cmd_add_songs("")
-            except mpd.ConnectionError:
-                reconnect_mpd()
+        except mpd.ConnectionError:
+            reconnect_mpd()
+            if len(mpc.playlist()) < 5:
                 cmd_add_songs("")
 
 def announce_wait():
@@ -83,6 +84,7 @@ def cmd_announce(command):
     filelist = os.listdir(os.path.join(MUSIC_PATH, NICK + "_intros"))
     filepath = filelist[random.randint(0, len(filelist)-1)]
     filepath = os.path.join(NICK + "_intros", filepath)
+    print filepath
     mpc.addid(filepath, 1)
 
 def cmd_add_songs(command):
