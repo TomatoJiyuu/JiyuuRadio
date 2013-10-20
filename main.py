@@ -5,6 +5,7 @@ import os
 import urllib2
 import threading
 import time
+import sys
 
 MPD_HOST = "127.0.0.1"
 MPD_PORT = 6600
@@ -37,12 +38,19 @@ if not os.path.exists(os.path.join(MUSIC_PATH, NICK+"_downloaded_music")):
 
 
 
+def reconnect_mpd():
+    try:
+        mpc.disconnect()
+    except mpd.ConnectionError:
+        pass
+    mpc.connect(MPD_HOST, MPD_PORT)
+
 
 def cmd_play(command):
-    mpc.play()
+        mpc.play()
 
 def cmd_next(command):
-    mpc.next()
+        mpc.next()
 
 def cmd_download(command):
     try:
@@ -76,13 +84,15 @@ def cmd_add(command):
     mpc.searchadd("any", args)
 
 def cmd_current(command):
+    song_info = ""
     return_output(mpc.currentsong())
 
 def cmd_queue(command):
-    queue = "Next 4 tracks:\n"
-    for track in mpc.playlist()[ : 4]:
-        queue += str(track)+"\n"
-    return_output(queue)
+    queue = mpc.playlist()
+    queuestr = "Next 4 of %s tracks:\n" % len(queue)
+    for track in queue[ : 4]:
+        queuestr += str(track)+"\n"
+    return_output(queuestr)
 
 def cmd_stats(command):
     return_output(mpc.stats())
@@ -111,7 +121,14 @@ def parse_command(command):
         mapped = command[:command.index(" ")]
     except ValueError:
         mapped = command
-    COMMAND_MAPPING[mapped](command)
+    try:
+        COMMAND_MAPPING[mapped](command)
+    except (KeyError, mpd.ConnectionError) as e:
+        if type(e) == mpd.ConnectionError:
+            reconnect_mpd()
+            COMMAND_MAPPING[mapped](command)
+        else:
+            pass
 
 
 
@@ -128,16 +145,19 @@ while 1:
 	print line
 
 while 1:
-    line = s.recv(2048)
-    line = line.strip("\r\n")
-    print line
-    if "PING" in line:
-        s.send("PONG :" + line[6 : ])
-    elif "PRIVMSG" in line and not "NOTICE" in line and HOME_CHANNEL in line:
-        command = line[line.rindex(HOME_CHANNEL + " :") + len(HOME_CHANNEL) + 2 : ]
-        if "*" in command:
-            return_output("NOPE")
-        elif command.startswith("."):
-            t = threading.Thread(target = parse_command, args=(command[1 : ],))
-            t.daemon = 1
-            t.start()
+    try:
+        line = s.recv(2048)
+        line = line.strip("\r\n")
+        print line
+        if "PING" in line:
+            s.send("PONG :" + line[6 : ])
+        elif "PRIVMSG" in line and not "NOTICE" in line and HOME_CHANNEL in line:
+            command = line[line.rindex(HOME_CHANNEL + " :") + len(HOME_CHANNEL) + 2 : ]
+            if "*" in command:
+                return_output("NOPE")
+            elif command.startswith("."):
+                t = threading.Thread(target = parse_command, args=(command[1 : ],))
+                t.daemon = 1
+                t.start()
+    except KeyboardInterrupt:
+        sys.exit()
