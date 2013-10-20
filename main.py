@@ -20,6 +20,7 @@ SSL = True
 
 MUSIC_PATH = "/media/music/Music"
 
+ANNOUNCE = True
 ANNOUNCE_INTERVAL = 900
 
 HELP_DICT = {"add": ".add [search term] - queues tracks for playback",
@@ -58,12 +59,16 @@ def reconnect_mpd():
     mpc.connect(MPD_HOST, MPD_PORT)
 
 
-def announce_wait():
+def auto_wait():
     while 1:
-        time.sleep(ANNOUNCE_INTERVAL)
-        announce()
+        time.sleep(30)
         if len(mpc.playlist()) < 4:
             cmd_add_songs("")
+
+def announce_wait():
+    while 1:
+        announce()
+        time.sleep(ANNOUNCE_INTERVAL)
 
 def announce():
     filelist = os.listdir(os.path.join(MUSIC_PATH, NICK + "_intros"))
@@ -103,7 +108,7 @@ def cmd_download(command):
             track.close()
             mpc.update()
             time.sleep(5)
-            mpc.addid(fname, 2)
+            mpc.addid(os.path.join(NICK + "_downloaded_music", fname), 2)
             return_output(fname + " fetched and queued")
         else:
             return_output("Mime type " + dl.info().type + " not allowed.")
@@ -176,9 +181,15 @@ while 1:
     else:
 	print line
 
-t = threading.Thread(target = announce_wait, args=())
+if ANNOUNCE:
+    t = threading.Thread(target = announce_wait, args=())
+    t.daemon = 1
+    t.start()
+
+t = threading.Thread(target = auto_wait, args=())
 t.daemon = 1
 t.start()
+
 
 while 1:
     try:
