@@ -72,7 +72,6 @@ def cmd_announce(command):
     filelist = os.listdir(os.path.join(MUSIC_PATH, NICK + "_intros"))
     filepath = filelist[random.randint(0, len(filelist)-1)]
     filepath = os.path.join(NICK + "_intros", filepath)
-    print filepath
     mpc.addid(filepath, 1)
 
 def cmd_add_songs(command):
@@ -81,7 +80,7 @@ def cmd_add_songs(command):
         filepath = filelist[random.randint(0, len(filelist)-1)]
         filepath = os.path.join(NICK + "_downloaded_music", filepath)
         # this is just a quick solution so that we didn't have so much fucking Dragonforce playing all the time
-        if not os.isdir(filepath):
+        if not os.path.isdir(filepath):
             try:
                 mpc.add(filepath)
             except:
