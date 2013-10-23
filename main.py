@@ -28,6 +28,7 @@ s.send("JOIN " + HOME_CHANNEL + "\r\n")
 if not os.path.exists(os.path.join(MUSIC_PATH, NICK+"_downloaded_music")):
     os.mkdir(os.path.join(MUSIC_PATH, NICK+"_downloaded_music"))
 
+lastAnnounce = ""
 
 
 def reconnect_mpd():
