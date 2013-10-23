@@ -80,10 +80,12 @@ def cmd_add_songs(command):
     for i in range(1,10):
         filepath = filelist[random.randint(0, len(filelist)-1)]
         filepath = os.path.join(NICK + "_downloaded_music", filepath)
-        try:
-            mpc.add(filepath)
-        except:
-            pass
+        # this is just a quick solution so that we didn't have so much fucking Dragonforce playing all the time
+        if not os.isdir(filepath):
+            try:
+                mpc.add(filepath)
+            except:
+                pass
 
 def cmd_play(command):
     mpc.play()
