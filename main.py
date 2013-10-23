@@ -73,6 +73,7 @@ def cmd_announce(command):
     filelist = os.listdir(os.path.join(MUSIC_PATH, NICK + "_intros"))
     filepath = filelist[random.randint(0, len(filelist)-1)]
     filepath = os.path.join(NICK + "_intros", filepath)
+    global lastAnnounce
     if filepath != lastAnnounce:
         mpc.addid(filepath, 1)
     else:
