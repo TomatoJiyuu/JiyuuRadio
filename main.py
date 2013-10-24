@@ -219,7 +219,7 @@ while 1:
             s.send("PONG :" + line[6 : ])
         elif "PRIVMSG" in line and not "NOTICE" in line and HOME_CHANNEL in line:
             command = line[line.rindex(HOME_CHANNEL + " :") + len(HOME_CHANNEL) + 2 : ]
-            if "*" in command:
+            if ".add" and "*" in command:
                 return_output("NOPE")
             elif command.startswith("."):
                 t = threading.Thread(target = parse_command, args=(command[1 : ],))
